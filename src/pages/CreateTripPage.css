@@ -1,0 +1,365 @@
+/* ==========================================================================
+   TripSync Create Trip Workflow Styles (Simplified Milestone 2.1)
+   ========================================================================== */
+
+.ts-create-trip-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg);
+}
+
+.ts-create-trip-main {
+  flex: 1;
+  padding-block: var(--space-8) var(--space-16);
+  text-align: left;
+}
+
+.ts-create-trip-nav {
+  margin-bottom: var(--space-6);
+}
+
+.ts-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.ts-back-btn:hover {
+  color: var(--color-primary);
+}
+
+.ts-create-trip-header {
+  margin-bottom: var(--space-8);
+  text-align: left;
+}
+
+.ts-create-trip-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -0.025em;
+  margin-bottom: var(--space-2);
+}
+
+.ts-create-trip-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  max-width: 620px;
+}
+
+/* -------------------------------------------------------------------------
+   Step Indicator
+   ------------------------------------------------------------------------- */
+.ts-step-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  max-width: 720px;
+}
+
+.ts-indicator-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-subtle);
+}
+
+.ts-indicator-step.is-active {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ts-indicator-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.ts-indicator-step.is-active .ts-indicator-badge {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.ts-indicator-divider {
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+  max-width: 80px;
+}
+
+/* -------------------------------------------------------------------------
+   Form Container Card
+   ------------------------------------------------------------------------- */
+.ts-create-trip-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.ts-form-section-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-1);
+}
+
+.ts-form-section-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.ts-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.ts-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ts-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+}
+
+.ts-input-helper {
+  font-size: 11px;
+  color: var(--color-text-subtle);
+  line-height: var(--line-height-snug);
+}
+
+.ts-input-field {
+  padding: 0.65rem 0.85rem;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: #ffffff;
+  color: var(--color-text);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ts-input-field:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-subtle);
+}
+
+.ts-input-field.has-error {
+  border-color: var(--color-error);
+  background-color: var(--color-error-bg);
+}
+
+.ts-field-error {
+  font-size: 11px;
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+  margin-top: 2px;
+}
+
+/* -------------------------------------------------------------------------
+   Travelers Counter Input
+   ------------------------------------------------------------------------- */
+.ts-travelers-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ts-counter-control {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: #ffffff;
+  overflow: hidden;
+  height: 42px;
+}
+
+.ts-counter-btn {
+  width: 38px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.ts-counter-btn:hover:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+}
+
+.ts-counter-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ts-counter-input {
+  width: 50px;
+  height: 100%;
+  border: none;
+  border-left: 1px solid var(--color-border-subtle);
+  border-right: 1px solid var(--color-border-subtle);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-sans);
+  color: var(--color-primary);
+}
+
+.ts-counter-input:focus {
+  outline: none;
+  background-color: var(--color-primary-subtle);
+}
+
+.ts-travelers-count-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+/* -------------------------------------------------------------------------
+   Budget Input with Prefix
+   ------------------------------------------------------------------------- */
+.ts-currency-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ts-currency-symbol {
+  position: absolute;
+  left: 0.85rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.ts-input-field.with-currency {
+  padding-left: 2rem;
+  width: 100%;
+}
+
+/* -------------------------------------------------------------------------
+   Review Step Layout
+   ------------------------------------------------------------------------- */
+.ts-review-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.ts-review-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.ts-review-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ts-review-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  width: 180px;
+}
+
+.ts-review-val {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  text-align: right;
+  flex: 1;
+}
+
+.ts-review-val.is-primary {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.ts-form-actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* -------------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .ts-form-grid-2 {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .ts-create-trip-card {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .ts-review-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .ts-review-val {
+    text-align: left;
+  }
+}

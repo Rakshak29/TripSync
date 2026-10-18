@@ -1,0 +1,331 @@
+/* ==========================================================================
+   TripSync Landing Page Styles — Premium, Minimal Travel Planner
+   ========================================================================== */
+
+.ts-app-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+/* -------------------------------------------------------------------------
+   Notice Banner (Honest, non-misleading status for next steps)
+   ------------------------------------------------------------------------- */
+.ts-notice-banner {
+  background-color: var(--color-surface-subtle);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.ts-notice-banner__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.ts-notice-banner__close {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  padding: var(--space-1);
+  line-height: 1;
+}
+
+.ts-notice-banner__close:hover {
+  color: var(--color-text);
+}
+
+/* -------------------------------------------------------------------------
+   Header / Navigation Bar
+   ------------------------------------------------------------------------- */
+.ts-header {
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.ts-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+  gap: var(--space-4);
+}
+
+.ts-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.ts-brand__name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+}
+
+.ts-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* -------------------------------------------------------------------------
+   Hero Section — Spacious, Minimal, Visually Balanced
+   ------------------------------------------------------------------------- */
+.ts-hero-section {
+  padding-block: var(--space-20) var(--space-16);
+  text-align: center;
+}
+
+.ts-hero-content {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.ts-hero-headline {
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin-bottom: var(--space-5);
+}
+
+.ts-hero-supporting {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-relaxed);
+  max-width: 660px;
+  margin-inline: auto;
+  margin-bottom: var(--space-8);
+}
+
+.ts-hero-cta-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+/* -------------------------------------------------------------------------
+   Benefits Section
+   ------------------------------------------------------------------------- */
+.ts-benefits-section {
+  padding-block: var(--space-16);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.ts-section-heading {
+  text-align: center;
+  max-width: 680px;
+  margin-inline: auto;
+  margin-bottom: var(--space-12);
+}
+
+.ts-section-heading__title {
+  font-size: var(--font-size-3xl);
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+  margin-bottom: var(--space-3);
+}
+
+.ts-section-heading__subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+}
+
+.ts-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.ts-benefit-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.ts-benefit-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.ts-benefit-card__icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-5);
+}
+
+.ts-benefit-card__title {
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-3);
+}
+
+.ts-benefit-card__body {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-relaxed);
+}
+
+/* -------------------------------------------------------------------------
+   Philosophy / Callout Section
+   ------------------------------------------------------------------------- */
+.ts-philosophy-section {
+  padding-bottom: var(--space-20);
+}
+
+.ts-philosophy-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10) var(--space-8);
+  text-align: center;
+  max-width: 760px;
+  margin-inline: auto;
+  box-shadow: var(--shadow-xs);
+}
+
+.ts-philosophy-card__title {
+  font-size: var(--font-size-2xl);
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+  letter-spacing: -0.02em;
+}
+
+.ts-philosophy-card__text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  max-width: 560px;
+  margin-inline: auto;
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-6);
+}
+
+/* -------------------------------------------------------------------------
+   Footer
+   ------------------------------------------------------------------------- */
+.ts-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding-block: var(--space-8);
+}
+
+.ts-footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.ts-footer__brand-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ts-footer__tagline {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-subtle);
+}
+
+.ts-footer__links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  font-size: var(--font-size-xs);
+}
+
+.ts-footer__links a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.ts-footer__links a:hover {
+  color: var(--color-primary);
+}
+
+.ts-footer__bottom {
+  border-top: 1px solid var(--color-border-subtle);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-subtle);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* -------------------------------------------------------------------------
+   Responsive Layout Adjustments
+   ------------------------------------------------------------------------- */
+@media (max-width: 960px) {
+  .ts-benefits-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .ts-hero-headline {
+    font-size: var(--font-size-4xl);
+  }
+}
+
+@media (max-width: 640px) {
+  .ts-header__inner {
+    height: 60px;
+  }
+
+  .ts-hero-section {
+    padding-block: var(--space-12) var(--space-10);
+  }
+
+  .ts-hero-headline {
+    font-size: 2.15rem;
+  }
+
+  .ts-hero-supporting {
+    font-size: var(--font-size-base);
+  }
+
+  .ts-footer__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ts-footer__bottom {
+    flex-direction: column;
+  }
+}

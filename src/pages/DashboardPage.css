@@ -1,0 +1,549 @@
+/* ==========================================================================
+   TripSync Dashboard Styles — Polished Minimal Travel Workspace
+   ========================================================================== */
+
+.ts-dashboard-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg);
+}
+
+/* -------------------------------------------------------------------------
+   Header
+   ------------------------------------------------------------------------- */
+.ts-dashboard-header {
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.ts-dashboard-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+  gap: var(--space-4);
+}
+
+.ts-dashboard-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ts-user-profile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--color-border-subtle);
+}
+
+.ts-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.ts-user-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* -------------------------------------------------------------------------
+   Main Workspace
+   ------------------------------------------------------------------------- */
+.ts-dashboard-main {
+  flex: 1;
+  padding-block: var(--space-8) var(--space-16);
+  text-align: left;
+}
+
+/* Planning Intent Alert */
+.ts-intent-banner {
+  background-color: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.ts-intent-banner__content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Welcome Section */
+.ts-dashboard-welcome-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border-subtle);
+  text-align: left;
+}
+
+.ts-welcome-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ts-welcome-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -0.025em;
+}
+
+.ts-welcome-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+}
+
+/* -------------------------------------------------------------------------
+   Trip Overview Metrics
+   ------------------------------------------------------------------------- */
+.ts-metrics-section {
+  margin-bottom: var(--space-10);
+}
+
+.ts-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.ts-metric-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: left;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ts-metric-card:hover {
+  border-color: var(--color-border-hover);
+}
+
+.ts-metric-card--clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.ts-metric-card--clickable:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-sm);
+  background-color: #ffffff;
+}
+
+.ts-metric-card--clickable:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.ts-metric-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.ts-metric-label {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.ts-metric-link-hint {
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  opacity: 0.85;
+}
+
+.ts-metric-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  line-height: 1.1;
+  font-family: var(--font-sans);
+}
+
+.ts-metric-caption {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-subtle);
+}
+
+/* -------------------------------------------------------------------------
+   My Trips Section
+   ------------------------------------------------------------------------- */
+.ts-trips-section {
+  margin-bottom: var(--space-12);
+  text-align: left;
+}
+
+.ts-section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.ts-section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.015em;
+}
+
+.ts-view-all-btn {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ts-view-all-btn:hover {
+  text-decoration: underline;
+}
+
+/* Empty State Card */
+.ts-trips-empty-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.ts-empty-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-1);
+}
+
+.ts-empty-card-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.ts-empty-card-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-relaxed);
+  max-width: 460px;
+}
+
+/* Trips Grid (Ready for populated trips) */
+.ts-trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-5);
+}
+
+.ts-trip-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  text-align: left;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ts-trip-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.ts-trip-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.ts-trip-card__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.ts-trip-card__destination {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.ts-trip-card__status {
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.ts-trip-card__status.is-upcoming {
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary);
+  border-color: var(--color-primary-border);
+}
+
+.ts-trip-card__status.is-ongoing {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.ts-trip-card__status.is-completed {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+.ts-trip-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.ts-trip-card__footer {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ts-trip-card__budget {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}
+
+/* -------------------------------------------------------------------------
+   Plan Your Next Adventure Section — Full-Width Discover Places Feature
+   ------------------------------------------------------------------------- */
+.ts-adventure-section {
+  margin-bottom: var(--space-12);
+  text-align: left;
+}
+
+.ts-discover-banner {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.ts-discover-banner:hover {
+  border-color: var(--color-border-hover);
+}
+
+.ts-discover-banner__main {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+}
+
+.ts-discover-banner__icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ts-discover-banner__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.ts-discover-banner__tag-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ts-discover-tag {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  background-color: var(--color-primary-subtle);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-primary-border);
+}
+
+.ts-discover-banner__title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+}
+
+.ts-discover-banner__desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-relaxed);
+  max-width: 680px;
+}
+
+/* Feature criteria pills inside the banner */
+.ts-discover-banner__criteria {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.ts-criteria-pill {
+  font-size: 11px;
+  color: var(--color-text);
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-border-subtle);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ts-discover-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* -------------------------------------------------------------------------
+   Footer
+   ------------------------------------------------------------------------- */
+.ts-dashboard-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding-block: var(--space-6);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-subtle);
+  text-align: center;
+}
+
+/* -------------------------------------------------------------------------
+   Responsive adjustments
+   ------------------------------------------------------------------------- */
+@media (max-width: 840px) {
+  .ts-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .ts-discover-banner__main {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 640px) {
+  .ts-dashboard-header__inner {
+    height: 60px;
+  }
+
+  .ts-user-name {
+    display: none;
+  }
+
+  .ts-welcome-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .ts-trips-empty-card {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .ts-discover-banner {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .ts-discover-banner__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
