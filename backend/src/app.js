@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import healthRoutes from './routes/healthRoutes.js'
 import tripRoutes from './routes/tripRoutes.js'
+import destinationRoutes from './routes/destinationRoutes.js'
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 // Load environment variables from .env file
@@ -25,6 +26,7 @@ app.use(express.json())
 // API Routes
 app.use('/api', healthRoutes)
 app.use('/api/trips', tripRoutes)
+app.use('/api/destinations', destinationRoutes)
 
 // 404 handler for unknown routes
 app.use(notFoundHandler)

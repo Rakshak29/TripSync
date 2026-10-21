@@ -83,6 +83,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser to view the 
 | `npm run server:dev` | Starts the Express backend server with Node `--watch` reload |
 | `npm run build` | Builds the production bundle into the `dist/` directory |
 | `npm run preview` | Locally previews the production build |
+| `npm run db:seed:destinations` | Seeds the 40 curated destinations into MongoDB Atlas |
 | `npm run lint` | Runs ESLint to check for code quality and hook rules |
 | `npm test` | Executes the automated test suites (frontend + backend) |
 
@@ -329,6 +330,88 @@ Milestone 12 implements persistent trip data modeling and CRUD REST APIs using E
 
 ---
 
+## 🗺️ Destination Discovery Backend (Milestone 13 Part 13A)
+
+Milestone 13 Part 13A establishes the backend models, database seeder, and REST APIs for curated destination discovery.
+
+### 1. Seeding Destinations into MongoDB Atlas
+
+TripSync includes an idempotent database seeding script that populates the 40 curated Indian destinations without duplicating data or touching user trips:
+
+```bash
+npm run db:seed:destinations
+```
+
+*(Or from the backend directory: `npm --prefix backend run seed:destinations`)*
+
+The script checks for existing destinations by `customId` and updates or inserts them safely.
+
+### 2. Destination Endpoints
+
+#### A. List & Filter Destinations (`GET /api/destinations`)
+- **Supported Query Parameters**:
+  - `search`: Keyword search matching name, state, category, or description (e.g. `?search=Manali`)
+  - `category`: Filter by category (e.g. `?category=Mountains`)
+  - `state`: Filter by state or Union Territory (e.g. `?state=Goa`)
+  - `duration`: Filter by duration tier (`?duration=3-5`)
+  - `budget`: Filter by budget tier (`?budget=10k-25k`)
+  - `group`: Filter by travel companions (`?group=Family`)
+  - `experience`: Filter by experience (`?experience=Trekking`)
+  - `mood`: Filter by mood (`?mood=Adventurous`)
+- **Response (`200 OK`)**:
+  ```json
+  {
+    "status": "success",
+    "results": 40,
+    "data": {
+      "destinations": [ ... ]
+    }
+  }
+  ```
+
+#### B. Get Destination by ID (`GET /api/destinations/:id`)
+- Supports lookup by either:
+  - Custom destination ID: e.g. `GET /api/destinations/place_manali`
+  - MongoDB ObjectId: e.g. `GET /api/destinations/6716bc5987cfbac92b38dff1`
+- **Response (`200 OK`)**: Returns `{ "status": "success", "data": { "destination": { ... } } }`.
+- **Error Codes**: `404 Not Found` if the destination ID does not exist.
+
+#### C. Get Recommendations (`POST /api/destinations/recommend`)
+- Executes the weighted scoring and qualification algorithm on the backend.
+- **Request Body**:
+  ```json
+  {
+    "duration": "3-5",
+    "group": "Friends / Boys' Trip",
+    "experiences": ["Mountains", "Trekking"],
+    "budget": "10k-25k",
+    "moods": ["Adventurous", "Scenic"],
+    "domesticOnly": true
+  }
+  ```
+- **Response (`200 OK`)**:
+  ```json
+  {
+    "status": "success",
+    "results": 5,
+    "data": {
+      "recommendations": [
+        {
+          "destination": { "name": "Manali", "state": "Himachal Pradesh", ... },
+          "score": 17,
+          "isGroupMatch": true,
+          "isDurationMatch": true,
+          "isBudgetMatch": true,
+          "matchingExperiences": ["Mountains", "Trekking"],
+          "matchingMoods": ["Adventurous", "Scenic"]
+        }
+      ]
+    }
+  }
+  ```
+
+---
+
 ## 🧪 Testing
 
 TripSync includes automated test suites covering core business logic and backend endpoints:
@@ -338,6 +421,7 @@ npm test
 ```
 
 Test coverage includes:
+- **Discover Destinations Backend (Milestone 13 Part 13A)**: Validates Destination Mongoose schema constraints, duration mapping utility, REST endpoint responses (GET 200, category filter, keyword search, customId lookup, ObjectId lookup), 404 not found handling, 400 validation error handling, and recommendation scoring.
 - **Trip Data Models & REST APIs (Milestone 12)**: Validates Mongoose schema constraints (name/dest requirements, positive budget, integer travelers, date ranges), CRUD endpoint responses (POST 201, GET 200, PATCH 200, DELETE 200), and invalid ID (400) / nonexistent (404) error handling.
 - **Database Connection & Health (Milestone 11)**: Validates Mongoose connection lifecycle, missing URI handling, database status in `/api/health`, sanitized connection string logging, and offline mode.
 - **Backend Foundation (Milestone 10)**: Validates `GET /api/health` status 200, unknown route 404 handling, CORS origin headers, `.env.example` template, and `.gitignore` safety.
@@ -355,10 +439,11 @@ TripSync/
 ├── backend/                # Node.js + Express backend foundation
 │   ├── src/
 │   │   ├── config/         # Database connection module (db.js)
-│   │   ├── controllers/    # Request controllers (tripController.js)
+│   │   ├── controllers/    # Request controllers (tripController.js, destinationController.js)
 │   │   ├── middleware/     # 404 notFoundHandler and global errorHandler
-│   │   ├── models/         # Mongoose schemas (Trip.js)
-│   │   ├── routes/         # Express API routes (healthRoutes.js, tripRoutes.js)
+│   │   ├── models/         # Mongoose schemas (Trip.js, Destination.js)
+│   │   ├── routes/         # Express API routes (healthRoutes.js, tripRoutes.js, destinationRoutes.js)
+│   │   ├── scripts/        # Database seeders (seedDestinations.js)
 │   │   ├── app.js          # Express app configuration & middleware
 │   │   └── server.js       # Server entrypoint and port listener
 │   ├── .env.example        # Environment variable template
