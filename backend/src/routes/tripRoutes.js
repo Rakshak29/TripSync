@@ -6,6 +6,8 @@ import {
   updateTrip,
   deleteTrip,
 } from '../controllers/tripController.js'
+import expenseRoutes from './expenseRoutes.js'
+import { getBudgetSummary } from '../controllers/expenseController.js'
 
 const router = Router()
 
@@ -32,5 +34,11 @@ router.patch('/:id', updateTrip)
 
 // DELETE /api/trips/:id — Delete a trip by ID
 router.delete('/:id', deleteTrip)
+
+// Sub-resource routes: /api/trips/:tripId/expenses
+router.use('/:tripId/expenses', expenseRoutes)
+
+// Convenient direct endpoint: /api/trips/:tripId/budget-summary
+router.get('/:tripId/budget-summary', getBudgetSummary)
 
 export default router

@@ -412,6 +412,115 @@ The script checks for existing destinations by `customId` and updates or inserts
 
 ---
 
+## 💰 Budget & Expenses Backend (Milestone 13B)
+
+Milestone 13B implements persistent, trip-scoped expense tracking and dynamic budget analytics backed by MongoDB and Mongoose.
+
+### 1. Expense Model & Data Fields
+Each expense is associated with a specific trip via `tripId` (indexed):
+- `tripId`: Reference to parent `Trip` (`ObjectId`, required)
+- `title`: Short name or description of the expenditure (`String`, required, max 100)
+- `description`: Extended notes/details (`String`, optional, max 500)
+- `amount`: Cost in INR (`Number`, required, strictly > 0)
+- `category`: Classification matching frontend choices (`'Transport'`, `'Accommodation'`, `'Food'`, `'Activities'`, `'Shopping'`, `'Other'`)
+- `date`: Date of the expense (`Date`, required)
+- `paymentMethod`: Transaction mode (`'Cash'`, `'Credit Card'`, `'Debit Card'`, `'UPI'`, `'Net Banking'`, `'Other'`)
+- `notes`: Optional logistical notes (`String`, max 1000)
+
+### 2. Expense & Budget Endpoints
+
+All expense routes are scoped to individual trips under `/api/trips/:tripId/expenses`:
+
+#### A. Record an Expense (`POST /api/trips/:tripId/expenses`)
+- **Request Body**:
+  ```json
+  {
+    "title": "Hotel Stay in Calangute",
+    "amount": 9500,
+    "category": "Accommodation",
+    "date": "2026-11-12",
+    "paymentMethod": "Credit Card",
+    "notes": "Includes complimentary breakfast"
+  }
+  ```
+- **Response (`201 Created`)**:
+  ```json
+  {
+    "status": "success",
+    "message": "Expense created successfully",
+    "data": {
+      "expense": {
+        "_id": "6716bc5987cfbac92b38dfe2",
+        "tripId": "6716bc5987cfbac92b38dff1",
+        "title": "Hotel Stay in Calangute",
+        "amount": 9500,
+        "category": "Accommodation",
+        "date": "2026-11-12T00:00:00.000Z",
+        "paymentMethod": "Credit Card",
+        "notes": "Includes complimentary breakfast",
+        "createdAt": "2026-10-22T02:00:00.000Z",
+        "updatedAt": "2026-10-22T02:00:00.000Z"
+      }
+    }
+  }
+  ```
+
+#### B. List Trip Expenses (`GET /api/trips/:tripId/expenses`)
+- **Query Filters**: Optional `?category=Food`, `?paymentMethod=UPI`, `?startDate=2026-11-01&endDate=2026-11-15`.
+- **Response (`200 OK`)**:
+  ```json
+  {
+    "status": "success",
+    "count": 2,
+    "data": {
+      "expenses": [ ... ]
+    }
+  }
+  ```
+
+#### C. Get Single Expense (`GET /api/trips/:tripId/expenses/:id`)
+- **Cross-Trip Isolation**: Returns `404 Not Found` if the expense exists in the database but belongs to another trip.
+
+#### D. Update Expense (`PATCH /api/trips/:tripId/expenses/:id`)
+- Permitted updates: `title`, `description`, `amount`, `category`, `date`, `paymentMethod`, `notes`.
+- Attempting to modify immutable identifiers (`_id`, `tripId`) returns `400 Bad Request`.
+
+#### E. Delete Expense (`DELETE /api/trips/:tripId/expenses/:id`)
+- Returns `200 OK` on successful removal; cross-trip deletion attempts are blocked with `404 Not Found`.
+
+#### F. Dynamic Budget Summary (`GET /api/trips/:tripId/budget-summary`)
+*(Also available at `/api/trips/:tripId/expenses/summary`)*
+- Computes real-time financial metrics from actual expense records against the trip's estimated budget:
+- **Response (`200 OK`)**:
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "budgetSummary": {
+        "tripId": "6716bc5987cfbac92b38dff1",
+        "tripName": "Goa Coastal Holiday",
+        "totalBudget": 30000,
+        "totalSpent": 14000,
+        "remainingBudget": 16000,
+        "percentageUsed": 47,
+        "isOverBudget": false,
+        "overspentAmount": 0,
+        "expenseCount": 2,
+        "categoryBreakdown": [
+          { "category": "Transport", "label": "Transport", "icon": "🚆", "total": 0, "count": 0, "percentage": 0 },
+          { "category": "Accommodation", "label": "Accommodation", "icon": "🏨", "total": 9500, "count": 1, "percentage": 68 },
+          { "category": "Food", "label": "Food & Dining", "icon": "🍽️", "total": 4500, "count": 1, "percentage": 32 },
+          { "category": "Activities", "label": "Activities", "icon": "🎟️", "total": 0, "count": 0, "percentage": 0 },
+          { "category": "Shopping", "label": "Shopping", "icon": "🛍️", "total": 0, "count": 0, "percentage": 0 },
+          { "category": "Other", "label": "Other", "icon": "📦", "total": 0, "count": 0, "percentage": 0 }
+        ]
+      }
+    }
+  }
+  ```
+
+---
+
 ## 🧪 Testing
 
 TripSync includes automated test suites covering core business logic and backend endpoints:
@@ -421,6 +530,7 @@ npm test
 ```
 
 Test coverage includes:
+- **Budget & Expenses Backend (Milestone 13B)**: Validates Expense Mongoose schema constraints (positive amounts, required fields, allowed category and payment method enums), trip-scoped REST endpoints (POST 201, GET 200, PATCH 200, DELETE 200), cross-trip isolation enforcement (blocking cross-trip read/update/delete with 404), and dynamic budget summary computations (total spent, remaining budget, usage percentages, and category breakdown).
 - **Discover Destinations Backend (Milestone 13 Part 13A)**: Validates Destination Mongoose schema constraints, duration mapping utility, REST endpoint responses (GET 200, category filter, keyword search, customId lookup, ObjectId lookup), 404 not found handling, 400 validation error handling, and recommendation scoring.
 - **Trip Data Models & REST APIs (Milestone 12)**: Validates Mongoose schema constraints (name/dest requirements, positive budget, integer travelers, date ranges), CRUD endpoint responses (POST 201, GET 200, PATCH 200, DELETE 200), and invalid ID (400) / nonexistent (404) error handling.
 - **Database Connection & Health (Milestone 11)**: Validates Mongoose connection lifecycle, missing URI handling, database status in `/api/health`, sanitized connection string logging, and offline mode.
@@ -439,10 +549,10 @@ TripSync/
 ├── backend/                # Node.js + Express backend foundation
 │   ├── src/
 │   │   ├── config/         # Database connection module (db.js)
-│   │   ├── controllers/    # Request controllers (tripController.js, destinationController.js)
+│   │   ├── controllers/    # Request controllers (tripController.js, destinationController.js, expenseController.js)
 │   │   ├── middleware/     # 404 notFoundHandler and global errorHandler
-│   │   ├── models/         # Mongoose schemas (Trip.js, Destination.js)
-│   │   ├── routes/         # Express API routes (healthRoutes.js, tripRoutes.js, destinationRoutes.js)
+│   │   ├── models/         # Mongoose schemas (Trip.js, Destination.js, Expense.js)
+│   │   ├── routes/         # Express API routes (healthRoutes.js, tripRoutes.js, destinationRoutes.js, expenseRoutes.js)
 │   │   ├── scripts/        # Database seeders (seedDestinations.js)
 │   │   ├── app.js          # Express app configuration & middleware
 │   │   └── server.js       # Server entrypoint and port listener
