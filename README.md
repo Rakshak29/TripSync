@@ -78,23 +78,153 @@ Open [http://localhost:5173](http://localhost:5173) in your browser to view the 
 
 | Command | Description |
 | :--- | :--- |
-| `npm run dev` | Starts the Vite development server |
+| `npm run dev` | Starts the Vite frontend development server (`http://localhost:5173`) |
+| `npm run server` | Starts the Express backend server (`http://localhost:5001`) |
+| `npm run server:dev` | Starts the Express backend server with Node `--watch` reload |
 | `npm run build` | Builds the production bundle into the `dist/` directory |
 | `npm run preview` | Locally previews the production build |
 | `npm run lint` | Runs ESLint to check for code quality and hook rules |
-| `npm test` | Executes the automated project test suites |
+| `npm test` | Executes the automated test suites (frontend + backend) |
+
+---
+
+## 🖥️ Backend & Database Setup (Milestones 10 & 11)
+
+The TripSync backend is built using **Node.js**, **Express**, and **Mongoose**. It provides the server foundation for TripSync's REST APIs, environment configuration, CORS security, centralized error handling, and cloud database connectivity with **MongoDB Atlas**.
+
+### 1. Backend & Database Purpose
+- **Node.js & Express**: Exposes a lightweight, reliable REST server with CORS restricted to the frontend (`http://localhost:5173`).
+- **Mongoose**: An Object Data Modeling (ODM) library for MongoDB and Node.js. It manages connection pooling, schema enforcement, and seamless database interactions.
+- **Health Check (`GET /api/health`)**: Monitors both the Express server process and live MongoDB connectivity without requiring authentication.
+
+### 2. Install Backend Dependencies
+
+From the project root:
+```bash
+npm --prefix backend install
+```
+*(Or navigate into the directory: `cd backend && npm install`)*
+
+### 3. Environment Configuration
+
+Copy the sample environment template:
+```bash
+cp backend/.env.example backend/.env
+```
+
+| Variable | Default / Example | Description |
+| :--- | :--- | :--- |
+| `PORT` | `5001` | Server listening port (5001 avoids macOS AirPlay collision on 5000) |
+| `NODE_ENV` | `development` | Runtime environment (`development`, `production`, `test`) |
+| `CLIENT_ORIGIN` | `http://localhost:5173` | Frontend URL permitted by CORS |
+| `MONGODB_URI` | `mongodb+srv://<user>:<password>@cluster0.abc.mongodb.net/tripsync` | MongoDB Atlas (or local) connection string |
+
+> **Security Note**: Actual `.env` files are ignored by Git. Never commit real credentials, passwords, or connection strings. Each developer maintains their own local `backend/.env`.
+
+---
+
+### 4. Setting Up MongoDB Atlas (Recommended Cloud Database)
+
+To connect TripSync to a shared cloud database:
+
+1. **Sign Up / Log In**: Visit [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas) and create a free account.
+2. **Create a Free Cluster**:
+   - Click **"Create"** and select the free **M0 Shared** tier.
+   - Choose a cloud provider and region close to you (e.g., AWS / Mumbai `ap-south-1`).
+   - Click **"Create Deployment"**.
+3. **Create Database Credentials**:
+   - In **Security** → **Database Access**, click **"Add New Database User"**.
+   - Select **Password** authentication method.
+   - Enter a username (e.g., `tripsync_user`) and a secure password.
+   - Set user privileges to **"Read and write to any database"** (or Atlas admin).
+   - Click **"Add User"**.
+4. **Configure Network Access**:
+   - In **Security** → **Network Access**, click **"Add IP Address"**.
+   - For local development, click **"Allow Access from Anywhere"** (`0.0.0.0/0`) or choose **"Add Current IP Address"**.
+   - Confirm to save.
+5. **Get Your Connection String**:
+   - Go to **Database** → **Deployments** and click **"Connect"** on your cluster.
+   - Choose **"Drivers"** (Node.js).
+   - Copy the connection string format:
+     `mongodb+srv://<username>:<password>@<cluster-url>/tripsync?retryWrites=true&w=majority`
+6. **Configure `backend/.env`**:
+   - Paste the connection string into your local `backend/.env` as `MONGODB_URI`.
+   - Replace `<username>` and `<password>` with your real database user credentials.
+
+*(Note: If `MONGODB_URI` is omitted or empty, the backend boots safely in disconnected offline mode, allowing server health checks to run without crashing).*
+
+---
+
+### 5. Start the Backend Server
+
+- **Production / Standard Mode**:
+  ```bash
+  npm run server
+  # Or: cd backend && npm start
+  ```
+- **Development Watch Mode** (auto-reloads on file changes):
+  ```bash
+  npm run server:dev
+  # Or: cd backend && npm run dev
+  ```
+
+### 6. Test the Health Endpoint
+
+With the server running on `http://localhost:5001`:
+
+```bash
+curl http://localhost:5001/api/health
+```
+
+**Response with MongoDB Connected**:
+```json
+{
+  "status": "ok",
+  "message": "TripSync backend is running",
+  "timestamp": "2026-10-18T14:45:00.000Z",
+  "uptime": 24,
+  "database": {
+    "status": "connected",
+    "connected": true,
+    "host": "cluster0.abc.mongodb.net"
+  }
+}
+```
+
+**Response in Disconnected / Offline Mode**:
+```json
+{
+  "status": "ok",
+  "message": "TripSync backend is running",
+  "timestamp": "2026-10-18T14:45:00.000Z",
+  "uptime": 24,
+  "database": {
+    "status": "disconnected",
+    "connected": false,
+    "host": null
+  }
+}
+```
+
+Testing an unknown route:
+```bash
+curl http://localhost:5001/api/unknown
+# Returns HTTP 404: {"status":"error","message":"Route not found: GET /api/unknown"}
+```
 
 ---
 
 ## 🧪 Testing
 
-TripSync includes automated test suites covering core business logic and algorithms:
+TripSync includes automated test suites covering core business logic and backend endpoints:
 
 ```bash
 npm test
 ```
 
 Test coverage includes:
+- **Database Connection & Health (Milestone 11)**: Validates Mongoose connection lifecycle, missing URI handling, database status in `/api/health`, sanitized connection string logging, and offline mode.
+- **Backend Foundation (Milestone 10)**: Validates `GET /api/health` status 200, unknown route 404 handling, CORS origin headers, `.env.example` template, and `.gitignore` safety.
 - **Discover Places Actions**: Verifies Wishlist saving, deduplication, reload persistence, user isolation, and "Plan a Trip" form prefilling.
 - **Destination Dataset Integrity**: Validates schema compliance, domestic Indian boundaries, tag constraints, and thematic category coverage across all 40 destinations.
 - **Recommendation & Matching Rules**: Evaluates duration tier mapping, multi-attribute scoring, ranking, and edge-case handling (including incompatible empty states).
@@ -106,6 +236,14 @@ Test coverage includes:
 
 ```text
 TripSync/
+├── backend/                # Node.js + Express backend foundation
+│   ├── src/
+│   │   ├── middleware/     # 404 notFoundHandler and global errorHandler
+│   │   ├── routes/         # Express API routes (healthRoutes.js)
+│   │   ├── app.js          # Express app configuration & middleware
+│   │   └── server.js       # Server entrypoint and port listener
+│   ├── .env.example        # Environment variable template
+│   └── package.json        # Backend dependencies (express, cors, dotenv)
 ├── public/                 # Static assets (favicons, SVG icons)
 ├── src/
 │   ├── assets/             # Project images and SVG assets
@@ -117,10 +255,10 @@ TripSync/
 │   ├── App.jsx             # Main application layout and routing switch
 │   ├── index.css           # Global design system tokens and base styles
 │   └── main.jsx            # React root mount
-├── tests/                  # Automated verification test suites
+├── tests/                  # Automated verification test suites (frontend & backend)
 ├── eslint.config.js        # ESLint configuration
 ├── index.html              # HTML entry point
-├── package.json            # Project manifest & scripts
+├── package.json            # Project manifest & root convenience scripts
 └── vite.config.js          # Vite bundler configuration
 ```
 
