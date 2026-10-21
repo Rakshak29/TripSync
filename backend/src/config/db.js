@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 
+export { mongoose }
+
 /**
  * Sanitizes a MongoDB connection string by masking user credentials.
  * Ensures passwords and usernames are never printed to terminal or logs.

@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "server": "npm --prefix backend start",
     "server:dev": "npm --prefix backend run dev",
-    "test": "node tests/test_milestone11_db.mjs && node tests/test_milestone10_backend.mjs && node tests/test_milestone9_actions.mjs && node tests/test_milestone8_dataset.mjs && node tests/test_milestone7_revised.mjs && node tests/test_discover_places_component.mjs"
+    "test": "node tests/test_milestone12_trips.mjs && node tests/test_milestone11_db.mjs && node tests/test_milestone10_backend.mjs && node tests/test_milestone9_actions.mjs && node tests/test_milestone8_dataset.mjs && node tests/test_milestone7_revised.mjs && node tests/test_discover_places_component.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
