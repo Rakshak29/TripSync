@@ -1,7 +1,13 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { TripContext } from './tripContext'
 import { useAuth } from './authContext'
-import { getTripStatus, validateBookingData, validateTaskData } from '../utils/tripUtils'
+import { validateBookingData, validateTaskData } from '../utils/tripUtils'
+import {
+  fetchTrips,
+  createTripApi,
+  updateTripApi,
+  deleteTripApi,
+} from '../services/tripApi'
 
 /**
  * Validates and loads stored trips from localStorage.
@@ -109,6 +115,8 @@ export function TripProvider({ children }) {
 
   const [prevStorageKey, setPrevStorageKey] = useState(storageKey)
   const [trips, setTrips] = useState(() => loadStoredTrips(storageKey))
+  const [isLoading, setIsLoading] = useState(false)
+  const [apiError, setApiError] = useState(null)
 
   // Adjust state during render when switching user accounts
   if (storageKey !== prevStorageKey) {
@@ -129,13 +137,102 @@ export function TripProvider({ children }) {
     [storageKey]
   )
 
+  // Load trips from GET /api/trips on initialization or user account switch
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadTrips() {
+      setIsLoading(true)
+      setApiError(null)
+
+      try {
+        const res = await fetchTrips()
+        if (!isMounted) return
+
+        if (res.success && Array.isArray(res.trips)) {
+          // Preserve any existing local trips from localStorage that are not on the backend
+          const storedLocal = loadStoredTrips(storageKey)
+          const backendIds = new Set(res.trips.map((t) => t.id))
+          const legacyOnly = storedLocal.filter((t) => !backendIds.has(t.id))
+
+          // Merge sub-resources (itinerary, bookings, tasks, expenses) from cached state if available
+          const localMap = new Map(storedLocal.map((t) => [t.id, t]))
+          const mergedBackend = res.trips.map((bTrip) => {
+            const cached = localMap.get(bTrip.id)
+            if (cached) {
+              return {
+                ...bTrip,
+                itinerary: cached.itinerary?.length ? cached.itinerary : bTrip.itinerary,
+                expenses: cached.expenses?.length ? cached.expenses : bTrip.expenses,
+                bookings: cached.bookings?.length ? cached.bookings : bTrip.bookings,
+                tasks: cached.tasks?.length ? cached.tasks : bTrip.tasks,
+              }
+            }
+            return bTrip
+          })
+
+          const combined = [...mergedBackend, ...legacyOnly]
+          setTrips(combined)
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(combined))
+          } catch {
+            // ignore
+          }
+        } else if (!res.success) {
+          setApiError(res.error || 'Failed to load trips from backend.')
+        }
+      } catch (err) {
+        if (!isMounted) return
+        setApiError(err.message || 'Network error fetching trips.')
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadTrips()
+
+    return () => {
+      isMounted = false
+    }
+  }, [storageKey])
+
   /**
-   * Add a new trip.
+   * Manual refresh helper to re-sync trips from backend.
+   */
+  const refreshTrips = useCallback(async () => {
+    setIsLoading(true)
+    setApiError(null)
+    try {
+      const res = await fetchTrips()
+      if (res.success && Array.isArray(res.trips)) {
+        const storedLocal = loadStoredTrips(storageKey)
+        const backendIds = new Set(res.trips.map((t) => t.id))
+        const legacyOnly = storedLocal.filter((t) => !backendIds.has(t.id))
+        const combined = [...res.trips, ...legacyOnly]
+        setTrips(combined)
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(combined))
+        } catch {
+          // ignore
+        }
+      }
+    } catch (err) {
+      setApiError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [storageKey])
+
+  /**
+   * Add a new trip via backend API.
+   * Updates state and cache only after confirmed success.
    *
    * @param {Object} tripData
-   * @returns {{ success: boolean, trip?: Object, error?: string }}
+   * @returns {Promise<{ success: boolean, trip?: Object, error?: string }>}
    */
-  const addTrip = (tripData) => {
+  const addTrip = async (tripData) => {
     const name = tripData.name?.trim() || ''
     const destination = tripData.destination?.trim() || ''
     const startDate = tripData.startDate || ''
@@ -179,38 +276,47 @@ export function TripProvider({ children }) {
       }
     }
 
-    const newTrip = {
-      id: 'trip_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-      name,
-      destination,
-      startDate,
-      endDate,
-      travelers,
-      budget: numBudget,
-      notes,
-      itinerary: [],
-      expenses: [],
-      bookings: [],
-      tasks: [],
-      status: getTripStatus(startDate, endDate),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+    try {
+      const res = await createTripApi({
+        name,
+        destination,
+        startDate,
+        endDate,
+        travelers,
+        budget: numBudget,
+        notes,
+      })
 
-    const updated = [newTrip, ...trips]
-    saveTrips(updated)
-    return { success: true, trip: newTrip }
+      if (!res.success || !res.trip) {
+        return {
+          success: false,
+          error: res.error || 'Failed to save trip to backend.',
+        }
+      }
+
+      const createdTrip = res.trip
+      const updated = [createdTrip, ...trips]
+      saveTrips(updated)
+
+      return { success: true, trip: createdTrip }
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message || 'An unexpected error occurred while saving the trip.',
+      }
+    }
   }
 
   /**
-   * Update an existing trip.
+   * Update an existing trip via backend API.
+   * Updates state and cache only after confirmed success.
    *
    * @param {string} id
    * @param {Object} updatedFields
-   * @returns {{ success: boolean, trip?: Object, error?: string }}
+   * @returns {Promise<{ success: boolean, trip?: Object, error?: string }>}
    */
-  const updateTrip = (id, updatedFields) => {
-    const existing = trips.find((t) => t.id === id)
+  const updateTrip = async (id, updatedFields) => {
+    const existing = trips.find((t) => t.id === id || t._id === id)
     if (!existing) {
       return { success: false, error: 'Trip not found.' }
     }
@@ -261,41 +367,73 @@ export function TripProvider({ children }) {
       return { success: false, error: 'Traveler count cannot exceed 50.' }
     }
 
-    let updatedTrip = null
+    try {
+      const res = await updateTripApi(id, {
+        name,
+        destination,
+        startDate,
+        endDate,
+        travelers,
+        budget,
+        notes,
+      })
 
-    const updated = trips.map((trip) => {
-      if (trip.id === id) {
-        updatedTrip = {
-          ...trip,
-          name,
-          destination,
-          startDate,
-          endDate,
-          travelers,
-          budget,
-          notes,
-          status: getTripStatus(startDate, endDate),
-          updatedAt: new Date().toISOString(),
+      if (!res.success || !res.trip) {
+        return {
+          success: false,
+          error: res.error || 'Failed to update trip on backend.',
         }
-        return updatedTrip
       }
-      return trip
-    })
 
-    saveTrips(updated)
-    return { success: true, trip: updatedTrip }
+      const updatedTrip = {
+        ...existing,
+        ...res.trip,
+        itinerary: existing.itinerary || [],
+        expenses: existing.expenses || [],
+        bookings: existing.bookings || [],
+        tasks: existing.tasks || [],
+      }
+
+      const updated = trips.map((trip) =>
+        trip.id === id || trip._id === id ? updatedTrip : trip
+      )
+      saveTrips(updated)
+
+      return { success: true, trip: updatedTrip }
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message || 'An unexpected error occurred while updating the trip.',
+      }
+    }
   }
 
   /**
-   * Delete a trip by id.
+   * Delete a trip by id via backend API.
+   * Removes from state and cache only after confirmed success.
    *
    * @param {string} id
-   * @returns {{ success: boolean }}
+   * @returns {Promise<{ success: boolean, error?: string }>}
    */
-  const deleteTrip = (id) => {
-    const updated = trips.filter((trip) => trip.id !== id)
-    saveTrips(updated)
-    return { success: true }
+  const deleteTrip = async (id) => {
+    try {
+      const res = await deleteTripApi(id)
+      if (!res.success) {
+        return {
+          success: false,
+          error: res.error || 'Failed to delete trip from backend.',
+        }
+      }
+
+      const updated = trips.filter((trip) => trip.id !== id && trip._id !== id)
+      saveTrips(updated)
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message || 'An unexpected error occurred while deleting the trip.',
+      }
+    }
   }
 
   /**
@@ -305,7 +443,7 @@ export function TripProvider({ children }) {
    * @returns {Object|null}
    */
   const getTripById = (id) => {
-    return trips.find((trip) => trip.id === id) || null
+    return trips.find((trip) => trip.id === id || trip._id === id) || null
   }
 
   /**
@@ -1007,6 +1145,9 @@ export function TripProvider({ children }) {
       value={{
         trips,
         totalTrips: trips.length,
+        isLoading,
+        apiError,
+        refreshTrips,
         addTrip,
         updateTrip,
         updateTripNotes,

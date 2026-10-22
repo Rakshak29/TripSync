@@ -48,20 +48,67 @@ async function runTests() {
     console.log(`✓ 2B: Structured JSON error message verified: "${notFoundData.message}".\n`)
 
     // ----------------------------------------------------
-    // TEST 3: CORS Header Validation
+    // TEST 3: CORS Header Validation (Multiple Origins & Preflight)
     // ----------------------------------------------------
     console.log('--- TEST 3: CORS Configuration ---')
-    const corsRes = await fetch(`${baseUrl}/api/health`, {
+    // 3A: Origin 5173 allowed
+    const corsRes5173 = await fetch(`${baseUrl}/api/health`, {
       headers: {
         Origin: 'http://localhost:5173',
       },
     })
-    const allowOrigin = corsRes.headers.get('access-control-allow-origin')
+    const allowOrigin5173 = corsRes5173.headers.get('access-control-allow-origin')
     console.assert(
-      allowOrigin === 'http://localhost:5173' || allowOrigin === '*',
-      `Expected CORS allow origin header, got ${allowOrigin}`
+      allowOrigin5173 === 'http://localhost:5173',
+      `Expected CORS allow origin http://localhost:5173, got ${allowOrigin5173}`
     )
-    console.log(`✓ 3: CORS correctly permits frontend origin (${allowOrigin}).\n`)
+    console.log(`✓ 3A: CORS correctly permits frontend origin http://localhost:5173.`)
+
+    // 3B: Origin 5174 allowed
+    const corsRes5174 = await fetch(`${baseUrl}/api/health`, {
+      headers: {
+        Origin: 'http://localhost:5174',
+      },
+    })
+    const allowOrigin5174 = corsRes5174.headers.get('access-control-allow-origin')
+    console.assert(
+      allowOrigin5174 === 'http://localhost:5174',
+      `Expected CORS allow origin http://localhost:5174, got ${allowOrigin5174}`
+    )
+    console.log(`✓ 3B: CORS correctly permits secondary frontend origin http://localhost:5174.`)
+
+    // 3C: OPTIONS preflight request works
+    const preflightRes = await fetch(`${baseUrl}/api/health`, {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'http://localhost:5174',
+        'Access-Control-Request-Method': 'PATCH',
+        'Access-Control-Request-Headers': 'Content-Type',
+      },
+    })
+    console.assert(preflightRes.status === 204 || preflightRes.status === 200, `Expected 204 or 200 preflight, got ${preflightRes.status}`)
+    console.assert(
+      preflightRes.headers.get('access-control-allow-origin') === 'http://localhost:5174',
+      'Expected preflight to return access-control-allow-origin: http://localhost:5174'
+    )
+    console.assert(
+      preflightRes.headers.get('access-control-allow-credentials') === 'true',
+      'Expected preflight to return access-control-allow-credentials: true'
+    )
+    console.log(`✓ 3C: CORS preflight OPTIONS correctly handled with credentials for http://localhost:5174.`)
+
+    // 3D: Unrelated origin rejected
+    const corsResBad = await fetch(`${baseUrl}/api/health`, {
+      headers: {
+        Origin: 'http://unauthorized-domain.com',
+      },
+    })
+    const allowOriginBad = corsResBad.headers.get('access-control-allow-origin')
+    console.assert(
+      !allowOriginBad,
+      `Expected unrelated origin to be denied CORS header, but got ${allowOriginBad}`
+    )
+    console.log(`✓ 3D: CORS correctly rejects unauthorized origin (no allow-origin header).\n`)
 
     // ----------------------------------------------------
     // TEST 4: Environment & Safety Check

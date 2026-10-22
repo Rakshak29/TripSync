@@ -109,6 +109,31 @@
   margin-bottom: var(--space-6);
 }
 
+.ts-api-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.ts-api-error-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.ts-api-error-icon {
+  font-size: var(--font-size-base);
+  line-height: 1;
+}
+
+.ts-api-error-text {
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
 .ts-questionnaire-form {
   display: flex;
   flex-direction: column;
@@ -530,6 +555,20 @@
   background-color: #fef2f2;
   color: #b91c1c;
   border: 1px solid #fecaca;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.ts-score-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
   border-radius: var(--radius-full);
   font-size: 10px;
   font-weight: var(--font-weight-bold);

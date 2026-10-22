@@ -12,10 +12,15 @@ dotenv.config()
 const app = express()
 
 // Configure CORS for frontend access
-const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173'
+const rawClientUrl = process.env.CLIENT_URL || process.env.CLIENT_ORIGIN || 'http://localhost:5173'
+const envOrigins = rawClientUrl.split(',').map((o) => o.trim()).filter(Boolean)
+const allowedOrigins = Array.from(
+  new Set([...envOrigins, 'http://localhost:5173', 'http://localhost:5174'])
+)
+
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: allowedOrigins,
     credentials: true,
   })
 )

@@ -18,7 +18,7 @@ export function DashboardPage() {
   const { user, isAuthenticated, logout } = useAuth()
   const { navigate, routeState } = useRouter()
   const { wishlistCount } = useWishlist()
-  const { trips } = useTrips()
+  const { trips, isLoading, apiError, refreshTrips } = useTrips()
 
   // Route protection: redirect unauthenticated users to /login
   useEffect(() => {
@@ -132,6 +132,32 @@ export function DashboardPage() {
             </div>
           )}
 
+          {/* Backend API Error Banner */}
+          {apiError && (
+            <div
+              className="ts-general-error"
+              role="alert"
+              style={{ marginBottom: 'var(--space-4)' }}
+            >
+              <span>{apiError}</span>
+              <button
+                type="button"
+                onClick={refreshTrips}
+                style={{
+                  marginLeft: 'var(--space-3)',
+                  textDecoration: 'underline',
+                  background: 'none',
+                  border: 'none',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Welcome Section */}
           <div className="ts-dashboard-welcome-row">
             <div className="ts-welcome-header">
@@ -208,8 +234,15 @@ export function DashboardPage() {
               )}
             </div>
 
-            {/* When user has no trips: Thoughtful Empty State */}
-            {trips.length === 0 ? (
+            {/* When loading initial trips: Thoughtful Loading State */}
+            {isLoading && trips.length === 0 ? (
+              <div className="ts-trips-empty-card">
+                <h3 className="ts-empty-card-title">Loading journeys...</h3>
+                <p className="ts-empty-card-desc">
+                  Fetching your trips from the server.
+                </p>
+              </div>
+            ) : trips.length === 0 ? (
               <div className="ts-trips-empty-card">
                 <div className="ts-empty-icon-box">
                   <svg

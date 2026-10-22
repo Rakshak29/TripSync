@@ -108,29 +108,34 @@ export function CreateTripPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleConfirmCreate = () => {
+  const handleConfirmCreate = async () => {
     if (isSubmitting) return
     setIsSubmitting(true)
     setErrors({})
 
-    const result = addTrip({
-      name,
-      destination,
-      startDate,
-      endDate,
-      travelers,
-      budget,
-      notes,
-    })
+    try {
+      const result = await addTrip({
+        name,
+        destination,
+        startDate,
+        endDate,
+        travelers,
+        budget,
+        notes,
+      })
 
-    if (!result.success) {
-      setErrors({ form: result.error || 'Failed to save trip. Please try again.' })
+      if (!result.success || !result.trip) {
+        setErrors({ form: result.error || 'Failed to save trip. Please try again.' })
+        setIsSubmitting(false)
+        return
+      }
+
+      // Navigate straight to the new trip's dedicated workspace only after confirmed success
+      navigate(`/trips/${result.trip.id}`)
+    } catch (err) {
+      setErrors({ form: err.message || 'An unexpected error occurred while creating your trip.' })
       setIsSubmitting(false)
-      return
     }
-
-    // Navigate straight to the new trip's dedicated workspace
-    navigate(`/trips/${result.trip.id}`)
   }
 
   const durationDays =

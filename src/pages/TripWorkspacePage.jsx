@@ -36,6 +36,7 @@ export function TripWorkspacePage({ tripId }) {
   const { navigate } = useRouter()
   const {
     trips,
+    isLoading,
     updateTrip,
     deleteTrip,
     addActivity,
@@ -152,6 +153,7 @@ export function TripWorkspacePage({ tripId }) {
 
   // Direct Notes editing state
   const [isEditingNotes, setIsEditingNotes] = useState(false)
+  const [isSavingNotes, setIsSavingNotes] = useState(false)
   const [notesDraft, setNotesDraft] = useState('')
   const [notesError, setNotesError] = useState(null)
 
@@ -178,6 +180,7 @@ export function TripWorkspacePage({ tripId }) {
 
   // Edit Trip modal state
   const [isEditingTrip, setIsEditingTrip] = useState(false)
+  const [isSavingTrip, setIsSavingTrip] = useState(false)
   const [editTripName, setEditTripName] = useState('')
   const [editTripDestination, setEditTripDestination] = useState('')
   const [editTripStartDate, setEditTripStartDate] = useState('')
@@ -189,6 +192,8 @@ export function TripWorkspacePage({ tripId }) {
 
   // Delete Trip confirmation modal state
   const [isDeletingTrip, setIsDeletingTrip] = useState(false)
+  const [isDeletingTripLoading, setIsDeletingTripLoading] = useState(false)
+  const [deleteTripError, setDeleteTripError] = useState(null)
 
   // Route protection
   useEffect(() => {
@@ -204,7 +209,7 @@ export function TripWorkspacePage({ tripId }) {
     return null
   }
 
-  const trip = trips.find((t) => t.id === tripId)
+  const trip = trips.find((t) => t.id === tripId || t._id === tripId)
 
   // Populate edit fields when opening edit modal
   const handleOpenEditTrip = () => {
@@ -224,8 +229,10 @@ export function TripWorkspacePage({ tripId }) {
     setIsEditingTrip(true)
   }
 
-  const handleSaveEditTrip = (e) => {
+  const handleSaveEditTrip = async (e) => {
     e.preventDefault()
+    if (isSavingTrip) return
+
     const errs = {}
     if (!editTripName.trim()) {
       errs.name = 'Trip name is required.'
@@ -264,28 +271,53 @@ export function TripWorkspacePage({ tripId }) {
       return
     }
 
-    const res = updateTrip(trip.id, {
-      name: editTripName,
-      destination: editTripDestination,
-      startDate: editTripStartDate,
-      endDate: editTripEndDate,
-      travelers: editTripTravelers,
-      budget: numBudget,
-      notes: editTripNotes,
-    })
+    setIsSavingTrip(true)
+    setEditTripErrors({})
 
-    if (!res.success) {
-      setEditTripErrors({ form: res.error })
-      return
+    try {
+      const res = await updateTrip(trip.id, {
+        name: editTripName,
+        destination: editTripDestination,
+        startDate: editTripStartDate,
+        endDate: editTripEndDate,
+        travelers: editTripTravelers,
+        budget: numBudget,
+        notes: editTripNotes,
+      })
+
+      if (!res.success) {
+        setEditTripErrors({ form: res.error || 'Failed to update trip on server.' })
+        setIsSavingTrip(false)
+        return
+      }
+
+      setIsEditingTrip(false)
+    } catch (err) {
+      setEditTripErrors({ form: err.message || 'An unexpected error occurred while updating the trip.' })
+    } finally {
+      setIsSavingTrip(false)
     }
-
-    setIsEditingTrip(false)
   }
 
-  const handleConfirmDeleteTrip = () => {
-    deleteTrip(trip.id)
-    setIsDeletingTrip(false)
-    navigate('/dashboard')
+  const handleConfirmDeleteTrip = async () => {
+    if (isDeletingTripLoading) return
+    setIsDeletingTripLoading(true)
+    setDeleteTripError(null)
+
+    try {
+      const res = await deleteTrip(trip.id)
+      if (!res.success) {
+        setDeleteTripError(res.error || 'Failed to delete trip from server.')
+        setIsDeletingTripLoading(false)
+        return
+      }
+
+      setIsDeletingTrip(false)
+      navigate('/dashboard')
+    } catch (err) {
+      setDeleteTripError(err.message || 'An unexpected error occurred while deleting the trip.')
+      setIsDeletingTripLoading(false)
+    }
   }
 
   // --- Itinerary Handlers ---
@@ -579,15 +611,25 @@ export function TripWorkspacePage({ tripId }) {
   }
 
   // --- Additional Notes Handlers ---
-  const handleSaveNotes = (e) => {
+  const handleSaveNotes = async (e) => {
     e.preventDefault()
+    if (isSavingNotes) return
+    setIsSavingNotes(true)
     setNotesError(null)
-    const res = updateTripNotes(trip.id, notesDraft)
-    if (!res.success) {
-      setNotesError(res.error || 'Failed to update notes.')
-      return
+
+    try {
+      const res = await updateTripNotes(trip.id, notesDraft)
+      if (!res.success) {
+        setNotesError(res.error || 'Failed to update notes.')
+        setIsSavingNotes(false)
+        return
+      }
+      setIsEditingNotes(false)
+    } catch (err) {
+      setNotesError(err.message || 'An unexpected error occurred while updating notes.')
+    } finally {
+      setIsSavingNotes(false)
     }
-    setIsEditingNotes(false)
   }
 
   // --- Task Handlers ---
@@ -653,6 +695,41 @@ export function TripWorkspacePage({ tripId }) {
 
   // If trip not found
   if (!trip) {
+    if (isLoading) {
+      return (
+        <div className="ts-workspace-wrapper">
+          <header className="ts-dashboard-header">
+            <PageContainer>
+              <div className="ts-dashboard-header__inner">
+                <a
+                  href="#"
+                  className="ts-brand"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    navigate('/dashboard')
+                  }}
+                >
+                  <CompassLogo size={26} />
+                  <span className="ts-brand__name">TripSync</span>
+                </a>
+              </div>
+            </PageContainer>
+          </header>
+
+          <main className="ts-workspace-main">
+            <PageContainer>
+              <div className="ts-not-found-card">
+                <h2 className="ts-modal-title">Loading Journey Workspace...</h2>
+                <p className="ts-modal-desc">
+                  Fetching latest journey details from the server.
+                </p>
+              </div>
+            </PageContainer>
+          </main>
+        </div>
+      )
+    }
+
     return (
       <div className="ts-workspace-wrapper">
         <header className="ts-dashboard-header">
@@ -837,7 +914,10 @@ export function TripWorkspacePage({ tripId }) {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setIsDeletingTrip(true)}
+                onClick={() => {
+                  setDeleteTripError(null)
+                  setIsDeletingTrip(true)
+                }}
                 style={{
                   color: 'var(--color-error)',
                   borderColor: 'var(--color-border)',
@@ -988,11 +1068,17 @@ export function TripWorkspacePage({ tripId }) {
                             setNotesError(null)
                             setIsEditingNotes(false)
                           }}
+                          disabled={isSavingNotes}
                         >
                           Cancel
                         </Button>
-                        <Button variant="primary" size="sm" type="submit">
-                          Save Notes
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          type="submit"
+                          disabled={isSavingNotes}
+                        >
+                          {isSavingNotes ? 'Saving Notes...' : 'Save Notes'}
                         </Button>
                       </div>
                     </form>
@@ -2361,11 +2447,17 @@ export function TripWorkspacePage({ tripId }) {
                   size="md"
                   type="button"
                   onClick={() => setIsEditingTrip(false)}
+                  disabled={isSavingTrip}
                 >
                   Cancel
                 </Button>
-                <Button variant="primary" size="md" type="submit">
-                  Save Changes
+                <Button
+                  variant="primary"
+                  size="md"
+                  type="submit"
+                  disabled={isSavingTrip}
+                >
+                  {isSavingTrip ? 'Saving Changes...' : 'Save Changes'}
                 </Button>
               </div>
             </form>
@@ -2385,11 +2477,25 @@ export function TripWorkspacePage({ tripId }) {
               will permanently remove this journey and its workspace.
             </p>
 
+            {deleteTripError && (
+              <div
+                className="ts-general-error"
+                role="alert"
+                style={{ marginBottom: 'var(--space-4)' }}
+              >
+                {deleteTripError}
+              </div>
+            )}
+
             <div className="ts-modal-actions">
               <Button
                 variant="secondary"
                 size="md"
-                onClick={() => setIsDeletingTrip(false)}
+                onClick={() => {
+                  setDeleteTripError(null)
+                  setIsDeletingTrip(false)
+                }}
+                disabled={isDeletingTripLoading}
               >
                 Cancel
               </Button>
@@ -2397,12 +2503,13 @@ export function TripWorkspacePage({ tripId }) {
                 variant="primary"
                 size="md"
                 onClick={handleConfirmDeleteTrip}
+                disabled={isDeletingTripLoading}
                 style={{
                   backgroundColor: 'var(--color-error)',
                   borderColor: 'var(--color-error)',
                 }}
               >
-                Delete Trip
+                {isDeletingTripLoading ? 'Deleting Trip...' : 'Delete Trip'}
               </Button>
             </div>
           </div>

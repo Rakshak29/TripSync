@@ -6,7 +6,9 @@ import { useAuth } from '../context/authContext'
 import { useRouter } from '../context/routerContext'
 import { useWishlist } from '../context/wishlistContext'
 import {
-  matchSampleDestinations,
+  recommendDestinations,
+} from '../services/destinationApi'
+import {
   mapDaysToDurationTier,
 } from '../data/sampleDestinations'
 import './DiscoverPlacesPage.css'
@@ -83,6 +85,10 @@ export function DiscoverPlacesPage() {
 
   // Validation error state
   const [validationError, setValidationError] = useState(null)
+
+  // Async request state (Milestone 13D Stage 3)
+  const [isLoading, setIsLoading] = useState(false)
+  const [apiError, setApiError] = useState(null)
 
   // Results state
   const [matchedResults, setMatchedResults] = useState([])
@@ -198,9 +204,12 @@ export function DiscoverPlacesPage() {
   }
 
   // Form Submission
-  const handleSubmitPreferences = (e) => {
-    e.preventDefault()
+  const handleSubmitPreferences = async (e) => {
+    if (e && e.preventDefault) e.preventDefault()
+    if (isLoading) return // Prevent duplicate submissions
+
     setValidationError(null)
+    setApiError(null)
 
     // Validation
     const effectiveDuration = useCustomDays ? mapDaysToDurationTier(customDays) : duration
@@ -224,30 +233,44 @@ export function DiscoverPlacesPage() {
       return
     }
 
-    // Run matching on sample dataset
-    const results = matchSampleDestinations({
-      duration: effectiveDuration,
-      customDuration: useCustomDays ? customDays : null,
-      group,
-      experiences,
-      budget,
-      moods,
-      domesticOnly,
-    })
+    setIsLoading(true)
 
-    setMatchedResults(results)
-    setViewMode('results')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    try {
+      const res = await recommendDestinations({
+        duration: effectiveDuration,
+        customDuration: useCustomDays ? Number(customDays) || customDays : null,
+        group,
+        experiences,
+        budget,
+        moods,
+        domesticOnly,
+      })
+
+      if (!res.success) {
+        setApiError(res.error || 'Unable to retrieve destination recommendations. Please try again.')
+        return
+      }
+
+      setMatchedResults(res.recommendations || [])
+      setViewMode('results')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (err) {
+      setApiError(err.message || 'A network error occurred while finding destinations. Please check your connection and try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Return to edit preferences without clearing selections
   const handleEditPreferences = () => {
+    setApiError(null)
     setViewMode('questionnaire')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Reset all preferences to clean defaults
   const handleResetPreferences = () => {
+    if (isLoading) return
     setDuration('3-5')
     setCustomDays('')
     setUseCustomDays(false)
@@ -257,6 +280,7 @@ export function DiscoverPlacesPage() {
     setMoods([])
     setDomesticOnly(true)
     setValidationError(null)
+    setApiError(null)
   }
 
   return (
@@ -319,13 +343,13 @@ export function DiscoverPlacesPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                 <h1 className="ts-discover-title">Discover Places</h1>
                 <span className="ts-discover-preview-pill">
-                  {viewMode === 'questionnaire' ? 'Trip Preferences' : 'Recommendations Preview'}
+                  {viewMode === 'questionnaire' ? 'Trip Preferences' : 'Recommendations'}
                 </span>
               </div>
               <p className="ts-discover-subtitle">
                 {viewMode === 'questionnaire'
                   ? 'Tell us about your trip requirements and preferred travel style to discover tailored destination recommendations.'
-                  : 'Here are sample destination ideas matching your travel duration, companions, budget, and desired experiences.'}
+                  : 'Here are destination recommendations matching your travel duration, companions, budget, and desired experiences.'}
               </p>
             </div>
           </div>
@@ -341,6 +365,24 @@ export function DiscoverPlacesPage() {
               {validationError && (
                 <div className="ts-general-error" role="alert">
                   ⚠️ {validationError}
+                </div>
+              )}
+
+              {apiError && (
+                <div className="ts-general-error ts-api-error-banner" role="alert">
+                  <div className="ts-api-error-content">
+                    <span className="ts-api-error-icon">⚠️</span>
+                    <span className="ts-api-error-text">{apiError}</span>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    type="button"
+                    onClick={handleSubmitPreferences}
+                    disabled={isLoading}
+                  >
+                    🔄 Retry
+                  </Button>
                 </div>
               )}
 
@@ -568,11 +610,12 @@ export function DiscoverPlacesPage() {
                     type="button"
                     className="ts-clear-btn"
                     onClick={handleResetPreferences}
+                    disabled={isLoading}
                   >
                     Reset Preferences
                   </button>
-                  <Button variant="primary" size="lg" type="submit">
-                    Find My Destinations →
+                  <Button variant="primary" size="lg" type="submit" disabled={isLoading}>
+                    {isLoading ? 'Finding Destinations...' : 'Find My Destinations →'}
                   </Button>
                 </div>
               </form>
@@ -627,21 +670,13 @@ export function DiscoverPlacesPage() {
                 </div>
               </div>
 
-              {/* Sample preview notice */}
-              <div className="ts-sample-preview-banner" role="note">
-                <span className="ts-notice-icon">ℹ️</span>
-                <span className="ts-notice-text">
-                  <strong>Sample Preview:</strong> These recommendations are generated using our temporary in-memory sample dataset and client-side filtering. Full curated dataset, AI matching, and Wishlist integration will be connected in subsequent milestones.
-                </span>
-              </div>
-
               {/* NO MATCH EMPTY STATE */}
               {matchedResults.length === 0 ? (
                 <div className="ts-itinerary-empty-card" style={{ padding: 'var(--space-12) var(--space-8)' }}>
                   <div className="ts-itinerary-empty-icon">🧭</div>
-                  <h3 className="ts-itinerary-empty-title">No matching sample destinations</h3>
+                  <h3 className="ts-itinerary-empty-title">No matching destinations found</h3>
                   <p className="ts-itinerary-empty-desc">
-                    We couldn&apos;t find any sample destinations matching your exact duration, budget, and experience combination. Try broadening your budget range or selecting additional experiences.
+                    We couldn&apos;t find any destinations matching your exact duration, budget, and experience combination. Try broadening your budget range or selecting additional experiences.
                   </p>
                   <Button variant="primary" size="md" onClick={handleEditPreferences}>
                     ✎ Adjust Preferences
@@ -650,7 +685,7 @@ export function DiscoverPlacesPage() {
               ) : (
                 /* TEXT-FIRST DESTINATION CARDS GRID (NO IMAGE BANNERS) */
                 <div className="ts-text-cards-grid" role="list">
-                  {matchedResults.map(({ destination: dest, matchingExperiences = [] }) => (
+                  {matchedResults.map(({ destination: dest, score, matchingExperiences = [] }) => (
                     <article key={dest.id} className="ts-text-dest-card" role="listitem">
                       {/* Card Header */}
                       <div className="ts-text-card-header">
@@ -659,6 +694,11 @@ export function DiscoverPlacesPage() {
                             {dest.categoryIcon} {dest.category}
                           </span>
                           <div className="ts-text-card-meta-right">
+                            {typeof score === 'number' && score > 0 && (
+                              <span className="ts-score-badge" title={`Match Score: ${score} points`}>
+                                ★ {score} pts
+                              </span>
+                            )}
                             {isDestinationInWishlist(dest.name) && (
                               <span className="ts-card-saved-pill" title="Saved in your wishlist">
                                 ♥ In Wishlist
